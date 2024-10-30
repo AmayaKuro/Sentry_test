@@ -95,35 +95,22 @@ def requestConversation(request):
         return Response(chat, status=status.HTTP_201_CREATED)
 
     elif request.method == "DELETE":
-        # try:
-        data = json.loads(request.body.decode("utf-8"))
-        conversation_id = data["conversation_id"]
-        # except:
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            conversation_id = data["conversation_id"]
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        # if not idCheck(conversation_id):
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
+        if not idCheck(conversation_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        # try:
-        #     Conversations.objects.get(conversation_id=conversation_id).delete()
-        #     # Since the conversation is deleted, the responses are deleted as well by CASCADE
-        # except:
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
-        print(conversation_id)
-        with connection.cursor() as cursor:
-            q = """DELETE FROM bard4free_conversations WHERE conversation_id='{}'""".format(
-                conversation_id
-            )
-            # cursor.execute(q)
-            # row = cursor.fetchone()
+        try:
+            Conversations.objects.get(conversation_id=conversation_id).delete()
+            # Since the conversation is deleted, the responses are deleted as well by CASCADE
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            a = Conversations.objects.raw(q)
-            a = a[0]
-
-        # ChatCompletion.delete(
-        #     provider=Bard,
-        #     conversation_id=conversation_id
-        # )
+        ChatCompletion.delete(provider=Bard, conversation_id=conversation_id)
 
         return Response(status=status.HTTP_202_ACCEPTED, data=a)
 
@@ -133,29 +120,20 @@ def requestConversation(request):
 def requestResponse(request):
     if request.method == "GET":
         conversation_id = request.GET.get("conversation_id") or ""
-        # if not idCheck(conversation_id):  
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
+        if not idCheck(conversation_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        # if digit then not need to add quotes
-        q = (
-            "SELECT * FROM bard4free_responses WHERE conversation_id=('%s')" % conversation_id
+        responses = (
+            Responses.objects.values("response_id", "choice_id", "log", "message")
+            .filter(conversation__conversation_id=conversation_id)
+            .order_by("pk")
         )
 
-        print("Query:", Responses.objects.raw(q).query)
-        responses = Responses.objects.raw(q)
-            # Responses.objects.values("response_id", "choice_id", "log", "message")
-            # .filter(conversation__conversation_id=conversation_id)
-            # .order_by("pk")
-            # TODO:  handle made query like browser
-            
-        
-        print("Responses:", responses)
-
-        # if len(responses) < 1:
-        #     return Response(status=status.HTTP_404_NOT_FOUND)
+        if len(responses) < 1:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = ResponseSerializer(responses, many=True)
-        return Response(serializer.data)   
+        return Response(serializer.data)
 
     if request.method == "POST":
         # Get the message from the request since its content type is application/json not multipart/form-data
