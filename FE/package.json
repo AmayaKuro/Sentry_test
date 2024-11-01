@@ -14,7 +14,7 @@
     "@mui/icons-material": "^5.14.15",
     "@mui/lab": "^5.0.0-alpha.147",
     "@mui/material": "^5.14.11",
-    "@sentry/nextjs": "^8.35.0",
+    "@sentry/nextjs": "^8.36.0",
     "@types/node": "20.4.2",
     "@types/react": "18.2.15",
     "@types/react-dom": "18.2.7",
