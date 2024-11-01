@@ -37,7 +37,7 @@ const handler = NextAuth({
                     }
                 } catch (error: any) {
                     // Catch-all error
-                    throw new Error(error?.messages || "Something went wrong")
+                    throw new Error(error?.message || "Something went wrong")
                 }
             },
         }),

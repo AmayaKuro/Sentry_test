@@ -10,8 +10,18 @@ Sentry.init({
   // Add optional integrations for additional features
   integrations: [
     Sentry.replayIntegration(),
+    Sentry.feedbackIntegration({
+      // Additional SDK configuration goes in here, for example:
+      colorScheme: "system",
+    }),
   ],
-
+  beforeSend(event, hint) {
+    // Check if it is an exception, and if so, show the report dialog
+    if (event.exception && event.event_id) {
+      Sentry.showReportDialog({ eventId: event.event_id });
+    }
+    return event;
+  },
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
   tracesSampleRate: 1,
 

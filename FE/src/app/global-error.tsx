@@ -7,6 +7,7 @@ import { useEffect } from "react";
 export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
   useEffect(() => {
     Sentry.captureException(error);
+    Sentry.showReportDialog({title: "Error Report", subtitle: "Please tell us what you were doing when this error occurred."}); 
   }, [error]);
 
   return (
